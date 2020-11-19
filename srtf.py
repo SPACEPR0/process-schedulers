@@ -1,5 +1,5 @@
 import sys
-from collections import deque
+import heapq
 
 #Clase básica de un proceso
 class Proceso:
@@ -34,7 +34,7 @@ class Proceso:
     def obtener_id(self):
         return self.__id
 
-    # La comparación de procesos se realiza por su tiempo restante
+    # La Comparación de procesos se realiza por su tiempo restante
     def __lt__(self, otro):
         return self.__periodos < otro.obtener_periodos_restantes()
 
