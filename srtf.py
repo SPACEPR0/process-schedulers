@@ -8,7 +8,7 @@ class Proceso:
         self.__id = id
         self.__periodos = periodos
         self.__tiempo_espera = 0
-        self.__tiempo_llegada = 0
+        self.__tiempo_llegada = tiempo_llegada
 
     # Este método suma una unidad al tiempo de espera del proceso
     def actualizar_tiempo_espera(self):
