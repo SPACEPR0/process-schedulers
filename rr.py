@@ -35,6 +35,9 @@ t = 0
 # Se obtienen los procesos que llegan en el tiempo 0
 cola = obtener_nuevos_procesos(procesos, 0)
 
+# Esta variable representa la cola de terminados
+terminados = []
+
 while True:
     #Si hay cola, entonces se toma el siguiente proceso
     if cola:
@@ -78,6 +81,7 @@ while True:
             print("terminó en el tiempo:", t, end=" ")
             print("Con tiempo de espera de:", cpu.obtener_tiempo_espera())
             print("---------------------------------------------------")
+            terminados.append(cpu)
             cpu = None
             break
 
