@@ -23,8 +23,11 @@ def srtf(procesos):
             # El proceso actual siempre será el que tenga menor tiempo restante
             proceso_actual = cola_listos[0]
 
+            # Se establece el tiempo de respuesta del proceso actual
+            proceso_actual.establecer_tiempo_respuesta(t)
+
             # Actualiza periodos
-            proceso_actual.actualizar_cpu_burst()
+            proceso_actual.actualizar_periodos_restantes()
 
             # Procesos que no se están ejecutando
             for p in cola_listos[1:]:
@@ -32,7 +35,13 @@ def srtf(procesos):
 
             t += 1
 
-            if proceso_actual.obtener_cpu_burst() == 0:
+            if proceso_actual.obtener_periodos_restantes() == 0:
+                # Se establece el tiempo de salida
+                proceso_actual.establecer_tiempo_salida(t)
+                # Se establece el tiempo de retorno. Para calcularo, es
+                # necesario que el tiempo de salida ya se haya establecido
+                proceso_actual.establecer_tiempo_retorno()
+
                 print("Proceso:", proceso_actual.obtener_id(), end=" ")
                 print("terminó en el tiempo:", t, end=" ")
                 print("Con tiempo de espera de:", proceso_actual.obtener_tiempo_espera())
@@ -56,10 +65,14 @@ def rr(procesos, q):
         return nuevos
 
     # Esta variable almacenará el proceso que está siendo atendido en el CPU
-    cpu = None
+    proceso_actual = None
 
     # Esta variable representa el tiempo
     t = 0
+
+    # Esta variable lleva la cuenta de los cambios de contexto realizados.
+    # Inicia en -1 para no contar el falso cambio de contexto del primer proceso
+    cambios_contexto = -1
 
     # Se obtienen los procesos que llegan en el tiempo 0
     cola = obtener_nuevos_procesos(procesos, 0)
@@ -70,17 +83,24 @@ def rr(procesos, q):
     while True:
         #Si hay cola, entonces se toma el siguiente proceso
         if cola:
-            cpu = cola.pop(0)
+            cambios_contexto += 1
+            proceso_actual = cola.pop(0)
+            # Si el proceso actual no tiene asignado un tiempo de respuesta
+            # significa que el 't' actual corresponde a su primera vez en el cpu,
+            # por lo tanto, el tiempo de respuesta se establece
+            if proceso_actual.obtener_tiempo_respuesta() == None:
+                proceso_actual.establecer_tiempo_respuesta(t)
+
         # Si no hay cola y el cpu está desocupado, pero existen procesos,
         # entonces los esperamos
-        elif procesos and cpu == None:
+        elif procesos and proceso_actual == None:
             t += 1
             # Se obtienen los procesos que llegaron en el tiempo actual
             cola.extend(obtener_nuevos_procesos(procesos, t))
             continue
         # Si hay procesos (o no) pero el cpu está ocupado, entonces seguimos
         # atendiendo al proceso
-        elif cpu != None:
+        elif proceso_actual != None:
             pass
         else: #Si la cola y lista de procesos están vacíos, además el cpu está libre, se termina.
             break
@@ -94,7 +114,7 @@ def rr(procesos, q):
             # Se actualiza el tiempo, el cpu burst del proceso actual y los tiempos
             # de espera de los procesos en la cola
             t += 1
-            cpu.actualizar_cpu_burst()
+            proceso_actual.actualizar_periodos_restantes()
             for p in cola:
                 p.actualizar_tiempo_espera()
 
@@ -103,19 +123,40 @@ def rr(procesos, q):
 
             # Si el cpu burst del proceso actual llegó a cero, entonces ya no
             # necesita el cpu y este se libera
-            if cpu.obtener_cpu_burst() == 0:
+            if proceso_actual.obtener_periodos_restantes() == 0:
                 proceso_termino = True
-                print("Proceso:", cpu.obtener_id(), end=" ")
-                print("llegó en el tiempo:", cpu.obtener_tiempo_llegada(), end=" ")
-                print("terminó en el tiempo:", t, end=" ")
-                print("Con tiempo de espera de:", cpu.obtener_tiempo_espera())
-                print("---------------------------------------------------")
-                terminados.append(cpu)
-                cpu = None
+                # Se establece el tiempo de salida
+                proceso_actual.establecer_tiempo_salida(t)
+                # Se establece el tiempo de retorno. Para calcularo, es
+                # necesario que el tiempo de salida ya se haya establecido
+                proceso_actual.establecer_tiempo_retorno()
+
+                terminados.append(proceso_actual)
+                proceso_actual = None
                 break
 
         # Si el proceso no terminó después de su turno, entonces se revisa si hay
         # otro proceso esperando en la cola; si no, continúa en el cpu
         if not proceso_termino:
+            # Si hay cola significa que ocurrirá un cambio de contexto
+            # porque un proceso diferente entrará al cpu
             if cola:
-                cola.append(cpu)
+                cola.append(proceso_actual)
+    
+    # Se escribe un csv con los resultados de la corrida
+    archivo = open('resultados_rr.csv', 'w')
+    archivo.write("id,cpu_burst,t_llegada,t_respuesta,t_salida,t_retorno,t_espera\n")
+    for p in terminados:
+        Id = p.obtener_id()
+        cpu_burst = str(p.obtener_cpu_burst())
+        t_llegada = str(p.obtener_tiempo_llegada())
+        t_respuesta = str(p.obtener_tiempo_respuesta())
+        t_salida = str(p.obtener_tiempo_salida())
+        t_retorno = str(p.obtener_tiempo_retorno())
+        t_espera = str(p.obtener_tiempo_espera())
+        resultado = (Id+','+cpu_burst+','+t_llegada+','+t_respuesta+','+t_salida+
+                    ','+t_retorno+','+t_espera+'\n')
+        archivo.write(resultado)
+
+    archivo.write(str(cambios_contexto))
+    archivo.close()
