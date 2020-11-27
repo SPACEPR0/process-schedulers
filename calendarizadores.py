@@ -80,6 +80,8 @@ def rr(procesos, q):
     # Esta variable representa la cola de terminados
     terminados = []
 
+    orden = []
+
     while True:
         #Si hay cola, entonces se toma el siguiente proceso
         if cola:
@@ -95,6 +97,7 @@ def rr(procesos, q):
         # entonces los esperamos
         elif procesos and proceso_actual == None:
             t += 1
+            orden.append("-")
             # Se obtienen los procesos que llegaron en el tiempo actual
             cola.extend(obtener_nuevos_procesos(procesos, t))
             continue
@@ -114,6 +117,7 @@ def rr(procesos, q):
             # Se actualiza el tiempo, el cpu burst del proceso actual y los tiempos
             # de espera de los procesos en la cola
             t += 1
+            orden.append(proceso_actual.obtener_id())
             proceso_actual.actualizar_periodos_restantes()
             for p in cola:
                 p.actualizar_tiempo_espera()
@@ -144,19 +148,16 @@ def rr(procesos, q):
                 cola.append(proceso_actual)
     
     # Se escribe un csv con los resultados de la corrida
-    archivo = open('resultados_rr.csv', 'w')
-    archivo.write("id,cpu_burst,t_llegada,t_respuesta,t_salida,t_retorno,t_espera\n")
-    for p in terminados:
-        Id = p.obtener_id()
-        cpu_burst = str(p.obtener_cpu_burst())
-        t_llegada = str(p.obtener_tiempo_llegada())
-        t_respuesta = str(p.obtener_tiempo_respuesta())
-        t_salida = str(p.obtener_tiempo_salida())
-        t_retorno = str(p.obtener_tiempo_retorno())
-        t_espera = str(p.obtener_tiempo_espera())
-        resultado = (Id+','+cpu_burst+','+t_llegada+','+t_respuesta+','+t_salida+
-                    ','+t_retorno+','+t_espera+'\n')
-        archivo.write(resultado)
+    terminados.sort(key=lambda p: p.obtener_id())
+    resultados = {"ids":[p.obtener_id() for p in terminados],
+                  "cpu_bursts":[p.obtener_cpu_burst() for p in terminados],
+                  "ts_llegada":[p.obtener_tiempo_llegada() for p in terminados],
+                  "ts_respuesta":[p.obtener_tiempo_respuesta() for p in terminados],
+                  "ts_salida":[p.obtener_tiempo_salida() for p in terminados],
+                  "ts_retorno":[p.obtener_tiempo_retorno() for p in terminados],
+                  "ts_espera":[p.obtener_tiempo_espera() for p in terminados],
+                  "cambios_contexto":cambios_contexto,
+                  "t":t, 
+                  "orden":orden}
 
-    archivo.write(str(cambios_contexto))
-    archivo.close()
+    return resultados
