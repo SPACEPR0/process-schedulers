@@ -28,7 +28,7 @@ media = args.media
 sd = args.desv_est
 
 # Creo que hay que ordernar los tiempos para que tenga mas sentido
-tiempos_llegada = np.sort(randint(0, n, (n,)))
+tiempos_llegada = np.sort(randint(0, 2 * n, (n,)))
 cpu_bursts = normal(media, sd, n).reshape(n,)
 ids = np.arange(n)
 
