@@ -69,6 +69,9 @@ def srtf(procesos):
             t += 1
             orden.append('-')
 
+    # Descarta el cambio de contexto para entrar el primer proceso
+    cambios_contexto -= 1
+
     # Se escribe un csv con los resultados de la corrida
     terminados.sort(key=Proceso.obtener_id)
     resultados = {
