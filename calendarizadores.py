@@ -14,6 +14,9 @@ def srtf(procesos):
     # Esta variable representa los procesos terminados
     terminados = []
 
+    # Orden de ejecución procesos
+    orden = []
+
     # Esta variable representa la cantidad de cambios de contexto
     cambios_contexto = 0
 
