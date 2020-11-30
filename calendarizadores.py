@@ -2,16 +2,23 @@ import heapq
 from proceso import Proceso
 
 def srtf(procesos):
-    procesos.sort(key = lambda p: p.obtener_tiempo_llegada())
+    procesos.sort(key=Proceso.obtener_tiempo_llegada)
 
     # Esta variable representa el tiempo
     t = 0
 
-    # Esta variable representa la cola de listos
+    # Esta variable representa la cola de listos como un heap donde el
+    # menor elemento tiene menor tiempo restante
     cola_listos = []
 
-    # Esta variable representa la cola de terminados
+    # Esta variable representa los procesos terminados
     terminados = []
+
+    # Esta variable representa la cantidad de cambios de contexto
+    cambios_contexto = 0
+
+    # Esta variable representa la cantidad de cambios de contexto
+    proceso_anterior = None
 
     # Hasta que la cola quede vacía y ya no haya procesos
     while procesos or cola_listos:
@@ -22,6 +29,13 @@ def srtf(procesos):
         if cola_listos:
             # El proceso actual siempre será el que tenga menor tiempo restante
             proceso_actual = cola_listos[0]
+
+            orden.append(proceso_actual.obtener_id())
+
+            # Actualiza cantidad de cambios de contexto
+            if proceso_actual != proceso_anterior:
+                cambios_contexto += 1
+                proceso_anterior = proceso_actual
 
             # Se establece el tiempo de respuesta del proceso actual
             proceso_actual.establecer_tiempo_respuesta(t)
@@ -50,6 +64,24 @@ def srtf(procesos):
                 terminados.append(heapq.heappop(cola_listos))
         else:
             t += 1
+            orden.append('-')
+
+    # Se escribe un csv con los resultados de la corrida
+    terminados.sort(key=Proceso.obtener_id)
+    resultados = {
+        "ids" : [p.obtener_id() for p in terminados],
+        "cpu_bursts" : [p.obtener_cpu_burst() for p in terminados],
+        "ts_llegada" : [p.obtener_tiempo_llegada() for p in terminados],
+        "ts_respuesta" : [p.obtener_tiempo_respuesta() for p in terminados],
+        "ts_salida" : [p.obtener_tiempo_salida() for p in terminados],
+        "ts_retorno" : [p.obtener_tiempo_retorno() for p in terminados],
+        "ts_espera" : [p.obtener_tiempo_espera() for p in terminados],
+        "cambios_contexto" : cambios_contexto,
+        "t" : t,
+        "orden":orden
+    }
+
+    return resultados
 # -----------------------------------------------------------------------------
 
 def rr(procesos, q):
@@ -146,9 +178,9 @@ def rr(procesos, q):
             # porque un proceso diferente entrará al cpu
             if cola:
                 cola.append(proceso_actual)
-    
+
     # Se escribe un csv con los resultados de la corrida
-    terminados.sort(key=lambda p: p.obtener_id())
+    terminados.sort(key=Proceso.obtener_id)
     resultados = {"ids":[p.obtener_id() for p in terminados],
                   "cpu_bursts":[p.obtener_cpu_burst() for p in terminados],
                   "ts_llegada":[p.obtener_tiempo_llegada() for p in terminados],
@@ -157,7 +189,7 @@ def rr(procesos, q):
                   "ts_retorno":[p.obtener_tiempo_retorno() for p in terminados],
                   "ts_espera":[p.obtener_tiempo_espera() for p in terminados],
                   "cambios_contexto":cambios_contexto,
-                  "t":t, 
+                  "t":t,
                   "orden":orden}
 
     return resultados
