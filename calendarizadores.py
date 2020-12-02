@@ -2,6 +2,10 @@ import heapq
 from proceso import Proceso
 
 def srtf(procesos):
+    # Se hace una copia de los procesos originales. sirve para ordenar los
+    # procesos al final
+    p_copy = procesos.copy()
+
     procesos.sort(key=Proceso.obtener_tiempo_llegada)
 
     # Esta variable representa el tiempo
@@ -58,11 +62,6 @@ def srtf(procesos):
                 # Se establece el tiempo de retorno. Para calcularo, es
                 # necesario que el tiempo de salida ya se haya establecido
                 proceso_actual.establecer_tiempo_retorno()
-
-                print("Proceso:", proceso_actual.obtener_id(), end=" ")
-                print("terminó en el tiempo:", t, end=" ")
-                print("Con tiempo de espera de:", proceso_actual.obtener_tiempo_espera())
-                print("---------------------------------------------------")
                 # Se saca de la cola de procesos
                 terminados.append(heapq.heappop(cola_listos))
         else:
@@ -72,8 +71,12 @@ def srtf(procesos):
     # Descarta el cambio de contexto para entrar el primer proceso
     cambios_contexto -= 1
 
+    # Se ordenan los procesos de acuerdo a orden en que llegaron
+    ids = [p for p in p_copy]
+    idxs_originales = [terminados.index(p) for p in ids]
+    terminados = [terminados[i] for i in idxs_originales]
+
     # Se escribe un csv con los resultados de la corrida
-    terminados.sort(key=Proceso.obtener_id)
     resultados = {
         "ids" : [p.obtener_id() for p in terminados],
         "cpu_bursts" : [p.obtener_cpu_burst() for p in terminados],
@@ -120,6 +123,9 @@ def rr(procesos, q):
 
     orden = []
 
+    # Copia de la lista de procesos originales. Sirve para ordenar los
+    # procesos al final
+    p_copy = procesos.copy()
     while True:
         #Si hay cola, entonces se toma el siguiente proceso
         if cola:
@@ -185,8 +191,13 @@ def rr(procesos, q):
             if cola:
                 cola.append(proceso_actual)
 
-    # Se escribe un csv con los resultados de la corrida
-    terminados.sort(key=Proceso.obtener_id)
+
+    # Se ordenan los procesos de acuerdo a orden en que llegaron
+    ids = [p for p in p_copy]
+    idxs_originales = [terminados.index(p) for p in ids]
+    terminados = [terminados[i] for i in idxs_originales]
+    
+    # Se escribe un csv con los resultados de la corrida 
     resultados = {"ids":[p.obtener_id() for p in terminados],
                   "cpu_bursts":[p.obtener_cpu_burst() for p in terminados],
                   "ts_llegada":[p.obtener_tiempo_llegada() for p in terminados],

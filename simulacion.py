@@ -74,6 +74,9 @@ def crear_tabla(resultado, algoritmo):
     # Se quitan los ejes a la tabla y se guarda como imagen .jpg
     plt.axis("off")
     plt.savefig(f"tabla_{algoritmo}.jpg", bbox_inches="tight", dpi=150)
+    # Se "limpia" la figura para evitar que se sobreescriba en usos posteriores
+    # de esta función
+    plt.clf()
 ###############################################################################
 
 
