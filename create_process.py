@@ -17,23 +17,32 @@ parser.add_argument("-m", "--media", help="Media de los CPU bursts"  +
 parser.add_argument("-s", "--desv_est", help="Desviacion estandar de los CPU bursts" + 
                     ", de no ser especificado, s = 5",
                     metavar="", type=float, default=5)
+parser.add_argument("-i", "--iniciales", help="Indicar el numero de procesos que se aseguran en el t = 0" + 
+                    ", de no ser especificado, i = 2", metavar="", type=int, default=2)
 
 args = parser.parse_args()
-
-
 
 archivo = args.archivo
 n = args.num_procesos
 media = args.media
 sd = args.desv_est
+init = args.iniciales
 
+# Aseguramos los procesos iniciales
+iniciales = np.zeros((init, ))
 # Creo que hay que ordernar los tiempos para que tenga mas sentido
-tiempos_llegada = np.sort(randint(0, 2 * n, (n,)))
+tiempos_llegada = np.sort(randint(0, media * n, (n - init,)))
+
+# Juntamos todos los tiempos
+tiempos_llegada = np.append(iniciales, tiempos_llegada)
+
 cpu_bursts = normal(media, sd, n).reshape(n,)
+
 ids = np.arange(n)
 
 
 procesos = np.array([ids, tiempos_llegada, cpu_bursts]).T
 
+# Guardamos sin que tenga corchetes 
 procesos = asarray(procesos)
 savetxt(archivo, procesos, delimiter=', ', fmt='%d')
