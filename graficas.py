@@ -22,7 +22,7 @@ def genera_df(resultado):
     return dataframe
 
 ## Genera tabla
-def crear_tabla(dataframe, resultado, cambio, cap):
+def crear_tabla(dataframe, resultado, cambio, cap, q=0):
     max_rows=100
     rowcol=['#F3F5F6' if i%2==0 else '#FFFFFF' for i in range(1, len(dataframe.index)+1)]
     
@@ -41,7 +41,7 @@ def crear_tabla(dataframe, resultado, cambio, cap):
        html.Thead([html.Th("Promedios", style={'textAlign': 'center'}), html.Td("-", style={'textAlign': 'center'}), html.Td("-", style={'textAlign': 'center'}), 
        html.Th(statistics.mean(resultado['ts_respuesta']), style={'textAlign': 'center'}), html.Td("-", style={'textAlign': 'center'}), 
        html.Th(statistics.mean(resultado['ts_retorno']), style={'textAlign': 'center'}), html.Th(statistics.mean(resultado['ts_espera']), style={'textAlign': 'center'})], style={'backgroundColor': '#A0E4C1'}),
-       html.Thead([html.Th("Cambios de Contexto: "), html.Td(cambio)]) 
+       html.Thead([html.Th("Cambios de Contexto: "), html.Td(cambio), html.Th("Quantum: " if q!=0 else ""), html.Td(q if q!=0 else "")]) 
     ], className = 'column')
 
 ## Función para gráfica de Gantt
@@ -123,7 +123,6 @@ def comparacion(res_srtf, res_rr):
     for p in ids:
         traza = []
         for i in range(len(c_srtf[p])):
-            #print(type(i))
             if c_srtf[p][i] == c_rr[p][i] and c_srtf[p][i] != None:
                 traza.append(c_srtf[p][i])
             else:
@@ -161,7 +160,7 @@ def comparacion(res_srtf, res_rr):
 
 ## Ambos algoritmos
 
-def layout_all(res_srtf, res_rr):
+def layout_all(res_srtf, res_rr, q=0):
     return html.Div(children=[
             html.Div(children=[
                 html.Div(children=[
@@ -179,7 +178,7 @@ def layout_all(res_srtf, res_rr):
             ]),
             html.Div(children=[
             crear_tabla(genera_df(res_srtf), res_srtf, res_srtf['cambios_contexto'], "SRTF"),
-            crear_tabla(genera_df(res_rr), res_rr, res_rr['cambios_contexto'], "Round Robin")
+            crear_tabla(genera_df(res_rr), res_rr, res_rr['cambios_contexto'], "Round Robin", q)
             ], style={
                 'marginLeft': 100, 'marginRight': 100, 'columnWidth': 600
             }, className = 'row'),
@@ -214,7 +213,7 @@ def layout_all(res_srtf, res_rr):
         ])
 
 ## Un solo algoritmo
-def layout_uni(res, alg):
+def layout_uni(res, alg, q=0):
     return html.Div(children=[
             html.Div(children=[
                 html.Div(children=[
@@ -231,7 +230,7 @@ def layout_uni(res, alg):
                 })
             ]),
             html.Div(children=[
-            crear_tabla(genera_df(res), res, res['cambios_contexto'], alg)
+            crear_tabla(genera_df(res), res, res['cambios_contexto'], alg, q)
             ], style={
                 'marginLeft': 100, 'marginRight': 150
             }, className = 'row'),

@@ -42,7 +42,7 @@ if algoritmo == "rr":
     else:
         print("ROUND ROBIN\n")
         resultado_rr = rr(obtener_procesos(archivo_procesos), quantum)
-        app.layout = graficas.layout_uni(resultado_rr, "Round Robin")
+        app.layout = graficas.layout_uni(resultado_rr, "Round Robin", quantum)
         app.run_server(debug=True)
 
 elif algoritmo == "srtf":
@@ -57,7 +57,7 @@ elif algoritmo == "all":
     else:
         resultado_rr = rr(obtener_procesos(archivo_procesos), quantum)
         resultado_srtf = srtf(obtener_procesos(archivo_procesos))
-        app.layout = graficas.layout_all(resultado_srtf, resultado_rr)
+        app.layout = graficas.layout_all(resultado_srtf, resultado_rr, quantum)
         app.run_server(debug=True)
 else:
     print("El algoritmo", algoritmo, "no está implementado.")
