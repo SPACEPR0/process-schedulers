@@ -101,6 +101,62 @@ def graficaGantt(orden, typ):
         fig.add_vline(i, line_color="gray")
     return fig
 
+## estructura para la grafica de comparacion
+def gen_comp(res):
+    df = {}
+    for p in res['ids']:
+        traza = []
+        for i in res['orden']:
+            if p == i:
+                traza.append(i)
+            else:
+                traza.append(None)
+        df[p] = traza
+    return df
+## Gráfica de comparación de algritmos
+
+def comparacion(res_srtf, res_rr):
+    c_srtf = gen_comp(res_srtf)
+    c_rr = gen_comp(res_rr)
+    ids = list(c_rr.keys())
+    coincide = {}
+    for p in ids:
+        traza = []
+        for i in range(len(c_srtf[p])):
+            #print(type(i))
+            if c_srtf[p][i] == c_rr[p][i] and c_srtf[p][i] != None:
+                traza.append(c_srtf[p][i])
+            else:
+                traza.append(None)
+        coincide[p] = traza
+    
+    # SRTF
+    fig = px.scatter(x=[x for x in range(len(c_srtf[ids[0]]))], y=c_srtf[ids[0]])
+    for i in range(len(ids)):
+        fig.add_scatter(x=[x for x in range(len(c_srtf[ids[0]]))], y=c_srtf[ids[i]], mode="lines+markers",
+                marker=dict(color="darkorange"))
+    # RR
+    for i in range(len(ids)):
+        fig.add_scatter(x=[x for x in range(len(c_rr[ids[0]]))], y=c_rr[ids[i]], mode="lines+markers",
+                marker=dict(color="LightSeaGreen"))
+    # Puntos donde coinciden
+    for i in range(len(ids)):
+        fig.add_scatter(x=[x for x in range(len(coincide[ids[0]]))], y=coincide[ids[i]], mode="lines+markers",
+                marker=dict(color="maroon"))
+    fig.update_layout({
+        'showlegend': False
+    })
+    fig.layout.xaxis.update({
+            'title': 'Tiempo'
+            })
+    fig.layout.yaxis.update({
+            'title': 'Procesos',
+            'tickmode': 'linear',
+            'dtick': 1,
+            'autorange': 'reversed',
+    })
+    return fig
+
 ## Layouts para la página ##
 
 ## Ambos algoritmos
@@ -142,6 +198,15 @@ def layout_all(res_srtf, res_rr):
                 dcc.Graph(
                 id='gantt-rr',
                 figure=graficaGantt(res_rr['orden'], "Round Robin")
+                ),
+            ], style={
+                'marginLeft': 200, 'marginRight': 350
+            }, className = 'row'),
+            html.Div(children=[
+                html.H4(children="Comparación de Algoritmos", style={'textAlign': 'center'}),
+                dcc.Graph(
+                id='comparacion',
+                figure=comparacion(res_srtf, res_rr)
                 ),
             ], style={
                 'marginLeft': 200, 'marginRight': 350
