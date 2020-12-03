@@ -36,7 +36,13 @@ tiempos_llegada = np.sort(randint(0, media * n, (n - init,)))
 # Juntamos todos los tiempos
 tiempos_llegada = np.append(iniciales, tiempos_llegada)
 
+# Tomamos tiempos de una normal
 cpu_bursts = normal(media, sd, n).reshape(n,)
+
+# Como se redondea a entero al convertir a archivo, cambiamos 
+#   todos los valores menores que 1 por la media mañosamente
+#   Esto deberia asegurar que no haya cpu bursts iguales a 0
+cpu_bursts = np.where(cpu_bursts < 1, media, cpu_bursts)
 
 ids = np.arange(n)
 
