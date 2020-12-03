@@ -2,10 +2,6 @@ import heapq
 from proceso import Proceso
 
 def srtf(procesos):
-    # Se hace una copia de los procesos originales. sirve para ordenar los
-    # procesos al final
-    p_copy = procesos.copy()
-
     procesos.sort(key=Proceso.obtener_tiempo_llegada)
 
     # Esta variable representa el tiempo
@@ -72,9 +68,7 @@ def srtf(procesos):
     cambios_contexto -= 1
 
     # Se ordenan los procesos de acuerdo a orden en que llegaron
-    ids = [p for p in p_copy]
-    idxs_originales = [terminados.index(p) for p in ids]
-    terminados = [terminados[i] for i in idxs_originales]
+    terminados.sort(key=lambda p: int(p.obtener_id()))
 
     # Se escribe un csv con los resultados de la corrida
     resultados = {
@@ -193,10 +187,7 @@ def rr(procesos, q):
 
 
     # Se ordenan los procesos de acuerdo a orden en que llegaron
-    ids = [p for p in p_copy]
-    idxs_originales = [terminados.index(p) for p in ids]
-    terminados = [terminados[i] for i in idxs_originales]
-    
+    terminados.sort(key=lambda p: int(p.obtener_id()))
     # Se escribe un csv con los resultados de la corrida 
     resultados = {"ids":[p.obtener_id() for p in terminados],
                   "cpu_bursts":[p.obtener_cpu_burst() for p in terminados],
